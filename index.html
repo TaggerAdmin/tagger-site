@@ -8,27 +8,25 @@
     <style>
         /* FULL-SCREEN BACKGROUND IMAGE */
         body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
 
-    background-image: url("assets/github_main_page.jpg");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #000;
+            background-image: url("assets/github_main_page.jpg");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #000;
 
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding-top: 150px; /* move card downward */
-}
+            display: flex;
+            justify-content: center;
+            align-items: center;   /* <-- back to original */
+            height: 100vh;         /* <-- original height */
+        }
 
-
-        /* WHITE OVERLAY CARD */
+        /* White overlay card */
         .card {
-            background: rgba(255, 255, 255, 0.9); /* Slight transparency overlay */
+            background: rgba(255, 255, 255, 0.9);
             padding: 40px;
             max-width: 600px;
             width: 90%;
