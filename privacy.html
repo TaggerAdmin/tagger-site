@@ -12,28 +12,22 @@
             position: fixed;
             top: 0;
             left: 0;
-
             display: flex;
             justify-content: center;
             gap: 30px;
-
             padding: 15px 0;
-
             background: rgba(255, 255, 255, 0.4);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
-
             box-shadow: 0 1px 10px rgba(0,0,0,0.1);
             z-index: 1000;
         }
-
         .navbar a {
             color: red;
             font-weight: bold;
             text-decoration: none;
             font-size: 1rem;
         }
-
         .navbar a:hover {
             text-decoration: underline;
         }
@@ -45,14 +39,11 @@
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: scroll;
-
             margin: 0;
-
+            padding-top: 140px;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-
-            padding-top: 120px; /* ensures space under nav bar */
             min-height: 100vh;
         }
 
@@ -60,11 +51,9 @@
             background: rgba(255, 255, 255, 0.70);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-
             padding: 40px;
             max-width: 800px;
             width: 90%;
-
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
@@ -95,6 +84,16 @@
         a:hover {
             text-decoration: underline;
         }
+
+        /* Blue clickable email link */
+        .email-link {
+            color: blue;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .email-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
@@ -105,7 +104,7 @@
         <a href="index.html">Home</a>
         <a href="privacy.html">Privacy Policy</a>
         <a href="faqs.html">FAQs</a>
-        <a href="index.html">Support</a>
+        <a href="support.html">Support</a>
     </nav>
 
     <div class="card">
@@ -163,10 +162,11 @@
         <h2>Contact Us</h2>
         <p>
             If you have any questions about this Privacy Policy, please contact us at:<br>
-            <strong>taggeradmin@proton.me</strong>
+            <strong><a class="email-link" href="mailto:taggeradmin@proton.me">taggeradmin@proton.me</a></strong>
         </p>
 
         <div class="footer">© 2025 TAGGER</div>
+
     </div>
 
 </body>
