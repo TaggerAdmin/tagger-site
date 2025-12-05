@@ -126,20 +126,26 @@
       padding: 1rem;
       border-radius: 10px;
       position: relative;
-      overflow: hidden;
+      overflow: auto;      /* ← scroll allowed */
       display: flex;
       justify-content: center;
       align-items: center;
-      touch-action: none; /* Needed for pinch-zoom */
+      touch-action: none;  /* needed for pinch + drag */
     }
 
     .modal-box img {
-      width: 100%;
+      width: auto;
       height: auto;
+      max-width: 100%;
       max-height: 100%;
       object-fit: contain;
       transform-origin: center center;
       transition: transform 0.1s linear;
+      cursor: grab;
+    }
+
+    .modal-box img:active {
+      cursor: grabbing;
     }
 
     .close-btn {
@@ -159,7 +165,6 @@
       z-index: 10;
     }
 
-    /* Navigation arrows for swipe mode */
     .nav-arrow {
       position: absolute;
       top: 50%;
@@ -231,13 +236,17 @@
     let currentIndex = 0;
     let scale = 1;
     let startDist = 0;
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
 
     function startModal(index) {
       currentIndex = index;
       scale = 1;
 
-      document.getElementById("modalImg").style.transform = "scale(1)";
-      document.getElementById("modalImg").src = tutorialImages[index];
+      const img = document.getElementById("modalImg");
+      img.style.transform = "scale(1)";
+      img.src = tutorialImages[index];
+
       document.getElementById("tutorialModal").classList.add("active");
     }
 
@@ -257,7 +266,7 @@
       startModal(currentIndex);
     }
 
-    /* SWIPE DETECTION */
+    /* ─────────── SWIPE NAVIGATION ─────────── */
     let touchStartX = 0;
 
     document.getElementById("modalBox").addEventListener("touchstart", e => {
@@ -293,7 +302,7 @@
       );
     }
 
-    /* PINCH-ZOOM & MOUSE WHEEL */
+    /* ─────────── PINCH-ZOOM & MOUSE WHEEL ─────────── */
     function applyZoom() {
       scale = Math.min(Math.max(scale, 1), 4);
       document.getElementById("modalImg").style.transform = `scale(${scale})`;
@@ -303,6 +312,52 @@
       e.preventDefault();
       scale += e.deltaY * -0.0015;
       applyZoom();
+    });
+
+    /* ─────────── DRAG TO PAN (desktop) ─────────── */
+    const modalImg = document.getElementById("modalImg");
+    const modalBox = document.getElementById("modalBox");
+
+    modalImg.addEventListener("mousedown", e => {
+      if (scale <= 1) return;
+      isDragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+
+    document.addEventListener("mouseup", () => isDragging = false);
+
+    document.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      modalBox.scrollLeft -= (e.clientX - lastX);
+      modalBox.scrollTop -= (e.clientY - lastY);
+      lastX = e.clientX;
+      lastY = e.clientY;
+    });
+
+    /* ─────────── DOUBLE-CLICK / DOUBLE-TAP ZOOM ─────────── */
+    modalImg.addEventListener("dblclick", () => {
+      scale = scale > 1 ? 1 : 2;
+      applyZoom();
+    });
+
+    let lastTap = 0;
+    modalImg.addEventListener("touchend", () => {
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        scale = scale > 1 ? 1 : 2;
+        applyZoom();
+      }
+      lastTap = now;
+    });
+
+    /* ─────────── KEYBOARD CONTROLS ─────────── */
+    document.addEventListener("keydown", e => {
+      if (!document.getElementById("tutorialModal").classList.contains("active")) return;
+
+      if (e.key === "Escape") closeModal();
+      if (e.key === "ArrowRight") nextImg(e);
+      if (e.key === "ArrowLeft") prevImg(e);
     });
   </script>
 
