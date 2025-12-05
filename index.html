@@ -39,7 +39,7 @@
       opacity: 0.8;
     }
 
-    /* CARD */
+    /* MAIN CARD */
     .card {
       background: white;
       margin: 2rem auto;
@@ -83,7 +83,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Hover icon */
     .hover-icon {
       position: absolute;
       top: 8px;
@@ -108,10 +107,16 @@
       align-items: center;
       padding: 2rem;
       z-index: 1000;
+      animation: fadeIn .25s ease-out;
     }
 
     .modal-bg.active {
       display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-box {
@@ -121,11 +126,20 @@
       padding: 1rem;
       border-radius: 10px;
       position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      touch-action: none; /* Needed for pinch-zoom */
     }
 
     .modal-box img {
       width: 100%;
       height: auto;
+      max-height: 100%;
+      object-fit: contain;
+      transform-origin: center center;
+      transition: transform 0.1s linear;
     }
 
     .close-btn {
@@ -142,7 +156,25 @@
       font-size: 22px;
       cursor: pointer;
       border: 2px solid #ccc;
+      z-index: 10;
     }
+
+    /* Navigation arrows for swipe mode */
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5rem;
+      color: #fff;
+      cursor: pointer;
+      padding: 0.5rem;
+      user-select: none;
+      text-shadow: 0px 0px 10px black;
+      z-index: 10;
+    }
+
+    .nav-left { left: 10px; }
+    .nav-right { right: 10px; }
   </style>
 </head>
 
@@ -164,43 +196,114 @@
     <h2>Tutorials</h2>
 
     <div class="tutorial-grid">
-
-      <!-- Tutorial 1 -->
-      <div class="tutorial-card" onclick="openTutorialModal('assets/TUTORIAL_SCREEN_1.png')">
+      <div class="tutorial-card" onclick="startModal(0)">
         <span class="hover-icon">🔍</span>
-        <img src="assets/TUTORIAL_SCREEN_1.png" alt="Tutorial Controls Thumbnail">
+        <img src="assets/TUTORIAL_SCREEN_1.png">
         <strong>Tutorial – Controls</strong>
       </div>
 
-      <!-- Tutorial 2 -->
-      <div class="tutorial-card" onclick="openTutorialModal('assets/TUTORIAL_SCREEN_2.png')">
+      <div class="tutorial-card" onclick="startModal(1)">
         <span class="hover-icon">🔍</span>
-        <img src="assets/TUTORIAL_SCREEN_2.png" alt="Tutorial Painting Thumbnail">
+        <img src="assets/TUTORIAL_SCREEN_2.png">
         <strong>Tutorial – Painting</strong>
       </div>
-
     </div>
   </div>
 
-  <!-- MODAL VIEWER -->
-  <div id="tutorialModal" class="modal-bg" onclick="closeTutorialModal()">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div class="close-btn" onclick="closeTutorialModal()">×</div>
-      <img id="tutorialModalImg" src="">
+  <!-- MODAL -->
+  <div id="tutorialModal" class="modal-bg" onclick="closeModal()">
+    <div class="modal-box" id="modalBox" onclick="event.stopPropagation()">
+
+      <div class="close-btn" onclick="closeModal()">×</div>
+      <div class="nav-arrow nav-left" onclick="prevImg(event)">❮</div>
+      <div class="nav-arrow nav-right" onclick="nextImg(event)">❯</div>
+
+      <img id="modalImg" src="">
     </div>
   </div>
 
   <script>
-    function openTutorialModal(imgSrc) {
-      const modal = document.getElementById('tutorialModal');
-      const modalImg = document.getElementById('tutorialModalImg');
-      modalImg.src = imgSrc;
-      modal.classList.add('active');
+    const tutorialImages = [
+      "assets/TUTORIAL_SCREEN_1.png",
+      "assets/TUTORIAL_SCREEN_2.png"
+    ];
+
+    let currentIndex = 0;
+    let scale = 1;
+    let startDist = 0;
+
+    function startModal(index) {
+      currentIndex = index;
+      scale = 1;
+
+      document.getElementById("modalImg").style.transform = "scale(1)";
+      document.getElementById("modalImg").src = tutorialImages[index];
+      document.getElementById("tutorialModal").classList.add("active");
     }
 
-    function closeTutorialModal() {
-      document.getElementById('tutorialModal').classList.remove('active');
+    function closeModal() {
+      document.getElementById("tutorialModal").classList.remove("active");
     }
+
+    function prevImg(e) {
+      e.stopPropagation();
+      currentIndex = (currentIndex - 1 + tutorialImages.length) % tutorialImages.length;
+      startModal(currentIndex);
+    }
+
+    function nextImg(e) {
+      e.stopPropagation();
+      currentIndex = (currentIndex + 1) % tutorialImages.length;
+      startModal(currentIndex);
+    }
+
+    /* SWIPE DETECTION */
+    let touchStartX = 0;
+
+    document.getElementById("modalBox").addEventListener("touchstart", e => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+      }
+      if (e.touches.length === 2) {
+        startDist = getDistance(e.touches);
+      }
+    });
+
+    document.getElementById("modalBox").addEventListener("touchmove", e => {
+      if (e.touches.length === 1) {
+        let deltaX = e.touches[0].clientX - touchStartX;
+        if (Math.abs(deltaX) > 60) {
+          deltaX > 0 ? prevImg(e) : nextImg(e);
+          touchStartX = e.touches[0].clientX;
+        }
+      }
+
+      if (e.touches.length === 2) {
+        let newDist = getDistance(e.touches);
+        scale *= newDist / startDist;
+        startDist = newDist;
+        applyZoom();
+      }
+    });
+
+    function getDistance(touches) {
+      return Math.hypot(
+        touches[0].clientX - touches[1].clientX,
+        touches[0].clientY - touches[1].clientY
+      );
+    }
+
+    /* PINCH-ZOOM & MOUSE WHEEL */
+    function applyZoom() {
+      scale = Math.min(Math.max(scale, 1), 4);
+      document.getElementById("modalImg").style.transform = `scale(${scale})`;
+    }
+
+    document.getElementById("modalBox").addEventListener("wheel", e => {
+      e.preventDefault();
+      scale += e.deltaY * -0.0015;
+      applyZoom();
+    });
   </script>
 
 </body>
